@@ -1,0 +1,4 @@
+name = Carpooling Misc Functionality
+description = Will hold all custom code for carpooling website
+package = Carpooling
+core = 7.x

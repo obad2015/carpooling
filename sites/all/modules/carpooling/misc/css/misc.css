@@ -1,0 +1,81 @@
+@CHARSET "UTF-8";
+
+/*
+* to add the theming to the outbut block
+* created by (Ahmed Essam)
+*/
+
+#steps{
+  //border-bottom: 4px dotted #E1E1E1;
+	padding: 10px 10px 10px 10px;
+	
+}
+
+.clear{
+	clear: both;
+}
+
+#step1{
+	
+	height: 150px;
+	width:130px;
+	border: 1px solid green;
+	float: left;
+	}
+	
+	#step2{
+	height: 150px;
+	width:130px;
+	border: 1px solid green;
+	float: left;
+}
+
+#step3{
+	
+	height: 150px;
+	width:130px;
+	border: 1px solid green;
+	float: left;
+	
+}
+
+#step4{
+	
+	height: 150px;
+	width:130px;
+	border: 1px solid green;
+	float: left;
+	
+}
+
+#step5{
+	
+	height: 150px;
+	width:130px;
+	border: 1px solid green;
+	float: left;
+	
+}
+
+
+
+#links
+{
+	width: 100%;
+	border: 1px thin black;
+	margin-top: 10px;
+}
+
+.link
+{
+	float: left;
+	width: 130px;
+	height: 20px;
+	border: 1px solid blue;
+	font-weight: bolder;
+	text-align: center;
+}
+
+.views-exposed-widget {
+	clear: both;
+}

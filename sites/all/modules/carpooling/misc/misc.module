@@ -1,0 +1,68 @@
+<?php
+
+
+/**
+ * Implments hook_init
+ */
+function misc_init() {
+	if (drupal_is_front_page() || $_GET['q'] === 'home') {
+		drupal_add_js("jQuery('#block-system-main').prepend('<h1>Search Rides</h1>');", 
+			 array('type' => 'inline', 'scope' => 'footer', 'group' => JS_THEME));
+	}
+	
+	$css_file_path = drupal_get_path('module', 'misc') . '/css/misc.css';
+	drupal_add_css($css_file_path, array('group' => CSS_DEFAULT, 'every_page' => TRUE));
+	
+	$js_file_path = drupal_get_path('module', 'misc') . '/js/misc.js';
+	drupal_add_js($js_file_path, array('group' => JS_THEME));
+	
+}
+
+
+/**
+ * Implments hook_block_info
+ */
+function misc_block_info() {
+	$blocks['how_it_works'] = array(
+		'info' => t('How it works?'),
+		'cache' => DRUPAL_CACHE_GLOBAL,
+	);
+	
+	return $blocks;
+}
+
+
+/**
+ * Implments hook_block_view
+ */
+function misc_block_view($delta = '') {
+	$block = array();
+	
+	switch ($delta) {
+		case 'how_it_works':
+			$block['subject'] = t('How it works');
+			$block['content'] = theme('how_it_works', array('HTML' => NULL));
+			break;
+	}
+	
+	return $block;
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function misc_theme() {
+	return array(
+    'how_it_works' => array(
+      'template' => 'how_it_works',
+      'variables' => array('HTML' => NULL),
+	),
+	);
+}
+
+
+function misc_form_alter(&$form, &$form_state, $form_id) {
+// 	echo $form_id . ' ';
+// 	print_r($form);
+}
