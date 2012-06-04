@@ -1,5 +1,18 @@
 <?php
 
+function misc_menu() {
+	$items = array();
+	
+	$items['misc/province/cities/%'] = array(
+	  'title' => 'Misc Get Province Cities',
+	  'type' => MENU_CALLBACK,
+	  'page callback' => '_get_province_cities_js',
+	  'page arguments' => array(3),
+	  'access callback' => TRUE,
+	);
+	
+	return $items;
+}
 
 /**
  * Implments hook_init
@@ -61,8 +74,78 @@ function misc_theme() {
 	);
 }
 
+/**
+ * @author abdelrahman
+ * hooks hook_form_FORM_ID_alter
+ * ride node add/edit form
+ */
+function misc_form_ride_node_form_alter(&$form, &$form_state, $form_id) {
+	// set ajax call back for from province
+	$form['field_from_province']['und']['#ajax'] = array(
+		'callback' => '_from_province_changed',
+		'wrapper' => 'from_city',
+		'effect' => 'fade',
+	);
 
-function misc_form_alter(&$form, &$form_state, $form_id) {
-// 	echo $form_id . ' ';
-// 	print_r($form);
+	// set the available options for 'from cities' based on 'from province'
+	$form['field_from_city']['#prefix'] = '<div id="from_city">';
+	$form['field_from_city']['#suffix'] = '</div>';
+	if (isset($form_state['values']['field_from_province']['und'][0]['tid'])) {
+		$form['field_from_city']['und']['#options'] = _get_province_cities($form_state['values']['field_from_province']['und'][0]['tid']);
+	}
+	else {
+		$form['field_from_city']['und']['#disabled'] = TRUE;
+	}
+	
+	// set ajax callback for 'to province'
+	$form['field_to_province']['und']['#ajax'] = array(
+			'callback' => '_to_province_changed',
+			'wrapper' => 'to_city',
+			'effect' => 'fade',
+	);
+	
+	// set avaible options for 'to cities' based on 'to province'
+	$form['field_to_city']['#prefix'] = '<div id="to_city">';
+	$form['field_to_city']['#suffix'] = '</div>';
+	if (isset($form_state['values']['field_to_province']['und'][0]['tid'])) {
+		$form['field_to_city']['und']['#options'] = _get_province_cities($form_state['values']['field_to_province']['und'][0]['tid']);
+	}
+	else {
+		$form['field_to_city']['und']['#disabled'] = TRUE;
+	}
+}
+
+
+function _from_province_changed($form, $form_state) {
+	return $form['field_from_city'];
+}
+
+function _to_province_changed($form, $form_state) {
+	return $form['field_to_city'];
+}
+
+function _get_province_cities($province_tid) {
+	$cities['_none'] = '- Select a value -';
+	
+	$province = taxonomy_term_load($province_tid);
+	
+	if (isset($province->field_cities[und])) {
+		foreach ($province->field_cities[und] as $entity) {
+			if (isset($entity['tid'])) {
+				$city = taxonomy_term_load($entity['tid']);
+				if (is_object($city)) {
+					$cities[$city->tid] = $city->name;
+				}
+			}
+		}
+	}
+	
+	return $cities;
+}
+
+function _get_province_cities_js($province_tid) {
+	$cities = _get_province_cities($province_tid);
+	
+	drupal_json_output($cities);
+	exit;
 }

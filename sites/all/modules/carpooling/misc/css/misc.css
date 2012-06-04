@@ -76,6 +76,7 @@
 	text-align: center;
 }
 
-.views-exposed-widget {
-	clear: both;
+
+.front #page-title {
+	display: none;
 }
