@@ -1,5 +1,6 @@
 jQuery(document).ready(function($) {
-  jQuery('form.node-form .form-radios, form.node-form .form-checkboxes').addClass('container-inline');
+  jQuery('#edit-field-type, #node_ride_form_group_to, #node_ride_form_group_from, #edit-field-no-passengers, #edit-field-passengers')
+  	.addClass('container-inline');
 
   update_from_cities();
   update_to_cities();
@@ -21,12 +22,12 @@ function update_province_city_dependency(province_selector, city_selector) {
 	jQuery(city_selector).attr('disabled','disabled');
 
 	if (tid != 'All') {
-	jQuery.getJSON(Drupal.settings.basePath + 'misc/province/cities/' + tid, {},  
+		jQuery.getJSON(Drupal.settings.basePath + 'misc/province/cities/' + tid, {},  
 	    function (cities) {	  
 	      jQuery(city_selector + ' option').remove();
 	      jQuery.each(cities, function(key, value) {
 	        jQuery(city_selector)
-	        .append(jQuery('<option>', { value : key })
+	        .prepend(jQuery('<option>', { value : key })
 	          .text(value)); 
 	      });
 	      jQuery(city_selector).removeAttr('disabled');

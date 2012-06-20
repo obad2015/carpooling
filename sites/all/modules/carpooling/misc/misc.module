@@ -1,34 +1,34 @@
 <?php
 
 function misc_menu() {
-	$items = array();
-	
-	$items['misc/province/cities/%'] = array(
-	  'title' => 'Misc Get Province Cities',
-	  'type' => MENU_CALLBACK,
-	  'page callback' => '_get_province_cities_js',
-	  'page arguments' => array(3),
-	  'access callback' => TRUE,
-	);
-	
-	return $items;
+  $items = array();
+
+  $items['misc/province/cities/%'] = array(
+    'title' => 'Misc Get Province Cities',
+    'type' => MENU_CALLBACK,
+    'page callback' => '_get_province_cities_js',
+    'page arguments' => array(3),
+    'access callback' => TRUE,
+  );
+
+  return $items;
 }
 
 /**
  * Implments hook_init
  */
 function misc_init() {
-	if (drupal_is_front_page() || $_GET['q'] === 'home') {
-		drupal_add_js("jQuery('#block-system-main').prepend('<h1>Search Rides</h1>');", 
-			 array('type' => 'inline', 'scope' => 'footer', 'group' => JS_THEME));
-	}
-	
-	$css_file_path = drupal_get_path('module', 'misc') . '/css/misc.css';
-	drupal_add_css($css_file_path, array('group' => CSS_DEFAULT, 'every_page' => TRUE));
-	
-	$js_file_path = drupal_get_path('module', 'misc') . '/js/misc.js';
-	drupal_add_js($js_file_path, array('group' => JS_THEME));
-	
+  if (drupal_is_front_page() || $_GET['q'] === 'home') {
+    drupal_add_js("jQuery('#block-system-main').prepend('<h1>" . t('Latest Rides') . "</h1>');", 
+      array('type' => 'inline', 'scope' => 'footer', 'group' => JS_THEME));
+  }
+
+  $css_file_path = drupal_get_path('module', 'misc') . '/css/misc.css';
+  drupal_add_css($css_file_path, array('group' => CSS_DEFAULT, 'every_page' => TRUE));
+
+  $js_file_path = drupal_get_path('module', 'misc') . '/js/misc.js';
+  drupal_add_js($js_file_path, array('group' => JS_THEME));
+
 }
 
 
@@ -36,12 +36,12 @@ function misc_init() {
  * Implments hook_block_info
  */
 function misc_block_info() {
-	$blocks['how_it_works'] = array(
-		'info' => t('How it works?'),
-		'cache' => DRUPAL_CACHE_GLOBAL,
-	);
-	
-	return $blocks;
+  $blocks['how_it_works'] = array(
+    'info' => t('How it works?'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+
+  return $blocks;
 }
 
 
@@ -49,16 +49,16 @@ function misc_block_info() {
  * Implments hook_block_view
  */
 function misc_block_view($delta = '') {
-	$block = array();
-	
-	switch ($delta) {
-		case 'how_it_works':
-			$block['subject'] = t('How it works');
-			$block['content'] = theme('how_it_works', array('HTML' => NULL));
-			break;
-	}
-	
-	return $block;
+  $block = array();
+
+  switch ($delta) {
+  case 'how_it_works':
+    $block['subject'] = t('How it works');
+    $block['content'] = theme('how_it_works', array('HTML' => NULL));
+    break;
+  }
+
+  return $block;
 }
 
 
@@ -66,12 +66,12 @@ function misc_block_view($delta = '') {
  * Implements hook_theme().
  */
 function misc_theme() {
-	return array(
+  return array(
     'how_it_works' => array(
       'template' => 'how_it_works',
       'variables' => array('HTML' => NULL),
-	),
-	);
+    ),
+  );
 }
 
 /**
@@ -80,72 +80,85 @@ function misc_theme() {
  * ride node add/edit form
  */
 function misc_form_ride_node_form_alter(&$form, &$form_state, $form_id) {
-	// set ajax call back for from province
-	$form['field_from_province']['und']['#ajax'] = array(
-		'callback' => '_from_province_changed',
-		'wrapper' => 'from_city',
-		'effect' => 'fade',
-	);
+  $form['field_cost']['und']['#default_value'] = NULL;
 
-	// set the available options for 'from cities' based on 'from province'
-	$form['field_from_city']['#prefix'] = '<div id="from_city">';
-	$form['field_from_city']['#suffix'] = '</div>';
-	if (isset($form_state['values']['field_from_province']['und'][0]['tid'])) {
-		$form['field_from_city']['und']['#options'] = _get_province_cities($form_state['values']['field_from_province']['und'][0]['tid']);
-	}
-	else {
-		$form['field_from_city']['und']['#disabled'] = TRUE;
-	}
-	
-	// set ajax callback for 'to province'
-	$form['field_to_province']['und']['#ajax'] = array(
-			'callback' => '_to_province_changed',
-			'wrapper' => 'to_city',
-			'effect' => 'fade',
-	);
-	
-	// set avaible options for 'to cities' based on 'to province'
-	$form['field_to_city']['#prefix'] = '<div id="to_city">';
-	$form['field_to_city']['#suffix'] = '</div>';
-	if (isset($form_state['values']['field_to_province']['und'][0]['tid'])) {
-		$form['field_to_city']['und']['#options'] = _get_province_cities($form_state['values']['field_to_province']['und'][0]['tid']);
-	}
-	else {
-		$form['field_to_city']['und']['#disabled'] = TRUE;
-	}
+  // set ajax call back for from province
+  $form['field_from_province']['und']['#ajax'] = array(
+    'callback' => '_from_province_changed',
+    'wrapper' => 'from_city',
+    'effect' => 'fade',
+  );
+
+  // set the available options for 'from cities' based on 'from province'
+  $form['field_from_city']['#prefix'] = '<div id="from_city">';
+  $form['field_from_city']['#suffix'] = '</div>';
+  if (isset($form_state['values']['field_from_province']['und'][0]['tid'])) {
+    $form['field_from_city']['und']['#options'] = _get_province_cities($form_state['values']['field_from_province']['und'][0]['tid']);
+  }
+  else {
+    $form['field_from_city']['und']['#disabled'] = TRUE;
+  }
+
+  // set ajax callback for 'to province'
+  $form['field_to_province']['und']['#ajax'] = array(
+    'callback' => '_to_province_changed',
+    'wrapper' => 'to_city',
+    'effect' => 'fade',
+  );
+
+  // set avaible options for 'to cities' based on 'to province'
+  $form['field_to_city']['#prefix'] = '<div id="to_city">';
+  $form['field_to_city']['#suffix'] = '</div>';
+  if (isset($form_state['values']['field_to_province']['und'][0]['tid'])) {
+    $form['field_to_city']['und']['#options'] = _get_province_cities($form_state['values']['field_to_province']['und'][0]['tid']);
+  }
+  else {
+    $form['field_to_city']['und']['#disabled'] = TRUE;
+  }
 }
 
 
 function _from_province_changed($form, $form_state) {
-	return $form['field_from_city'];
+  return $form['field_from_city'];
 }
 
 function _to_province_changed($form, $form_state) {
-	return $form['field_to_city'];
+  return $form['field_to_city'];
 }
 
-function _get_province_cities($province_tid) {
-	$cities['_none'] = '- Select a value -';
-	
-	$province = taxonomy_term_load($province_tid);
-	
-	if (isset($province->field_cities[und])) {
-		foreach ($province->field_cities[und] as $entity) {
-			if (isset($entity['tid'])) {
-				$city = taxonomy_term_load($entity['tid']);
-				if (is_object($city)) {
-					$cities[$city->tid] = $city->name;
-				}
-			}
-		}
-	}
-	
-	return $cities;
+function _get_province_cities($province_tid, $any = '_none') {
+  $cities[$any] = '- Select a value -';
+
+  $province = taxonomy_term_load($province_tid);
+
+  if (isset($province->field_cities[und])) {
+    foreach ($province->field_cities[und] as $entity) {
+      if (isset($entity['tid'])) {
+        $city = taxonomy_term_load($entity['tid']);
+        if (is_object($city)) {
+          $cities[$city->tid] = $city->name;
+        }
+      }
+    }
+  }
+
+  return $cities;
 }
 
 function _get_province_cities_js($province_tid) {
-	$cities = _get_province_cities($province_tid);
-	
-	drupal_json_output($cities);
-	exit;
+  $cities = _get_province_cities($province_tid, 'All');
+
+  drupal_json_output($cities);
+  exit;
+}
+
+function misc_node_access($node, $op, $account) {
+  if (!$account->uid) {
+    if (is_object($node) && $op == 'view') {
+      drupal_set_message(t('You have to be logged in to view this page, Click !here to login', 
+        array('!here' => l(t('here'), 'user', array('query' => array('destination' => 'node/' . $node->nid))))), 
+      'warning');
+    }
+    return NODE_ACCESS_DENY;
+  }	
 }
