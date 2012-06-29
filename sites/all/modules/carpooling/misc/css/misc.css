@@ -80,3 +80,7 @@
 .front #page-title {
 	display: none;
 }
+
+.view table {
+	width: 100%;
+}

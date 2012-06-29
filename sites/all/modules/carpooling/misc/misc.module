@@ -81,6 +81,13 @@ function misc_theme() {
  */
 function misc_form_ride_node_form_alter(&$form, &$form_state, $form_id) {
   $form['field_cost']['und']['#default_value'] = NULL;
+  $form['field_remaining_seats']['#access'] = FALSE;
+  
+  // making cost mode and cost inline
+  $form['field_cost_mode']['#prefix'] = '<div class="container-inline">';
+  $form['field_cost']['#suffix'] = '</div>';
+  // removing cost lable
+  $form['field_cost']['#und'][0]['value']['label'] = '';
 
   // set ajax call back for from province
   $form['field_from_province']['und']['#ajax'] = array(
@@ -142,7 +149,7 @@ function _get_province_cities($province_tid, $any = '_none') {
     }
   }
 
-  return $cities;
+  return array_reverse($cities, TRUE);
 }
 
 function _get_province_cities_js($province_tid) {
@@ -152,13 +159,55 @@ function _get_province_cities_js($province_tid) {
   exit;
 }
 
+/*
+ * Implments hook_node_presave
+ */
+function misc_node_presave($node) {
+	switch ($node->type) {
+		case 'ride':
+			// remaining seats count is the number of available seats
+			if ($node->is_new) {
+				$node->field_remaining_seats['und'][0]['value'] = $node->field_passengers['und'][0]['value'];
+			}
+	}
+}
+
 function misc_node_access($node, $op, $account) {
-  if (!$account->uid) {
-    if (is_object($node) && $op == 'view') {
-      drupal_set_message(t('You have to be logged in to view this page, Click !here to login', 
-        array('!here' => l(t('here'), 'user', array('query' => array('destination' => 'node/' . $node->nid))))), 
-      'warning');
-    }
-    return NODE_ACCESS_DENY;
-  }	
+	if (is_object($node)) {
+		switch($node->type) {
+			case 'ride':
+				if (!$account->uid && $op == 'view' && current_path() != 'search/rides') {
+					$msg = t('You have to be logged in to view ride details, Click !here to login',
+							array('!here' => l(t('here'), 'user', array('query' => array('destination' => 'node/' . $node->nid)))));
+					drupal_set_message($msg, 'warning');
+					return NODE_ACCESS_DENY;
+				}
+		}
+	}
+	return NODE_ACCESS_IGNORE;
+}
+
+
+function misc_views_pre_view(&$view, &$display_id, &$args) {
+	
+	if ($view->name == 'search_rides' || $display_id == 'page_1') {
+		$no_from_city = !(isset($_GET['field_from_city_tid']) && is_numeric($_GET['field_from_city_tid']));
+		$no_to_city = !(isset($_GET['field_to_city_tid']) && is_numeric($_GET['field_to_city_tid']));
+		
+		if ($no_to_city) {
+			// disabled wider to
+			unset($view->display['attachment_1']);
+		}
+		
+		if ($no_from_city) {
+			// disable wider from
+			unset($view->display['attachment_2']);
+		}
+		
+		if ($no_from_city || $no_to_city) {
+			// disable smart search
+			unset($view->display['attachment_3']);
+		}
+	}
+	
 }
