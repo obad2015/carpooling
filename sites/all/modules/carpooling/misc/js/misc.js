@@ -23,7 +23,6 @@ function update_to_cities() {
 function update_province_city_dependency(province_selector, city_selector) {
 	tid = jQuery(province_selector).val();
 	jQuery(city_selector).attr('disabled','disabled');
-	
 
 	if (tid != 'All') {
 		jQuery.getJSON(Drupal.settings.basePath + 'misc/province/cities/' + tid, {},  
