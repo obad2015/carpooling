@@ -12,15 +12,15 @@
 	<div id='links'>
 
 		<div class='link'>
-		<?php echo l(t('Add Ride'),'node/add/ride') ?></div>
+		<?php echo l(t('Add Ride'), 'help') ?></div>
 		<div class='link'>
-		<?php echo l(t('Contact Me'),'contact') ?></div>
+		<?php echo l(t('Contact Me'), 'help') ?></div>
 		<div class='link'>
-		<?php echo l(t('Reserve'),'reserve') ?></div>
+		<?php echo l(t('Reserve'), 'help') ?></div>
 		<div class='link'>
-		<?php echo l(t('Approved ?'),'approve') ?></div>
+		<?php echo l(t('Approved ?'), 'help') ?></div>
 		<div class='link'>
-		<?php echo l(t('Evaluate'),'evaluate') ?></div>
+		<?php echo l(t('Evaluate'), 'help') ?></div>
 
 
 		<div class="clear"></div>

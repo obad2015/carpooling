@@ -84,3 +84,28 @@
 .view table {
 	width: 100%;
 }
+
+.ride-action {
+	font-size: 18px;
+	list-style: none outside none !important;
+	display: block;
+}
+
+.field {
+  padding: 10px 0px;	
+}
+
+.field-label {
+	width: 105px;
+}
+
+.field-name-field-from-city .field-label,
+.field-name-field-to-city .field-label {
+	color: transparent;
+}
+
+
+.field-name-field-from-city ,
+.field-name-field-to-city {
+  padding-top: 0px;
+}
