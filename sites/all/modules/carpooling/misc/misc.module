@@ -60,6 +60,14 @@ function ride_subscribtion_update($js = FALSE, $node, $status) {
 	$node->field_status['und'][0]['value'] = $status;
 	node_save($node);
 	
+	// if subscribtion was accepted, then the remaining seats is -1
+	if ($status == 1) {
+		$ride_nid = $node->field_ride['und'][0]['nid'];
+		update_passenger_count($ride_nid, -1);
+	}
+	
+	
+	
 	$message = t('Your response has been saved');
 	
 	if ($js) {
@@ -75,10 +83,22 @@ function ride_subscribtion_update($js = FALSE, $node, $status) {
 	}
 }
 
+function update_passenger_count($ride_nid, $count_change) {
+	$ride = node_load($ride_nid);
+	
+	$ride->field_remaining_seats['und'][0]['value'] += $count_change;
+	
+	node_save($ride);	
+}
+
 /**
  * Implments hook_init
  */
 function misc_init() {
+	
+	if (drupal_is_front_page()) {
+		//show_homepage_notifications();
+	}
 	// ajax menu commands, surely there are other ways to fire this action
 	// by other triggers
 	ctools_add_js('ajax-responder');
@@ -146,7 +166,7 @@ function misc_node_view($node, $view_mode, $langcode) {
 			if ($view_mode == 'full') {
 				$node->content['apply'] = array(
 						'#markup' => ride_apply($node),
-						'#weight' => 12
+						'#weight' => 14
 				);
 			}		
 			break;
@@ -181,6 +201,7 @@ function ride_apply($node) {
       $subscribtion = node_load($nid);
       $text = render(field_view_value('node', $subscribtion, 'field_status', $subscribtion->field_status['und'][0]));
 
+      // cancel subscribtion for this ride
       $items[] = $text;
       $items[] = l('Cancel', 'node/' . $nid . '/delete');
     }
@@ -201,11 +222,23 @@ function ride_apply($node) {
   );
 }
 
+
+
 function misc_form_user_register_form_alter(&$form, &$form_state, $form_id) {
 	drupal_set_message(t('Please provide correct information about you, so you can be identified by your friends, and you would have a better
 	experience using this service.'), 'warning');
+	
+	$form['#validate'][] = '_misc_user_register_form_validate';
 }
 
+function _misc_user_register_form_validate(&$form, &$form_values) {
+	if ($form_values['values']['field_country']['und'][0]['value'] == 'EG') {
+		if (!isset($form_values['values']['field_ssn']['und'][0]['value']) || 
+					strlen($form_values['values']['field_ssn']['und'][0]['value']) < 14) {
+			form_set_error('field_ssn', 'social security number must be 14 digits (no spaces)');
+		} 
+	}
+}
 
 /**
  * @author abdelrahman
@@ -213,6 +246,30 @@ function misc_form_user_register_form_alter(&$form, &$form_state, $form_id) {
  * ride node add/edit form
  */
 function misc_form_ride_node_form_alter(&$form, &$form_state, $form_id) {
+	global $user;
+
+	// set default in ride creation to user car information
+	if (!is_numeric($form['nid']['#value'])) {
+		$user_data = user_load($user->uid);
+
+		try {
+			if (isset($user_data->field_car_brand['und'][0]['tid'])) {
+				$form['field_car_brand']['und']['#default_value'] = $user_data->field_car_brand['und'][0]['tid'];
+			}
+			
+			if (isset($user_data->field_car_model['und'][0]['value'])) {
+				$form['field_car_model']['und'][0]['value']['#default_value'] = $user_data->field_car_model['und'][0]['value'];
+			}
+			
+			if (isset($user_data->field_car_color['und'][0]['jquery_colorpicker'])) {
+				$form['field_car_color']['und'][0]['jquery_colorpicker']['#default_value'] = $user_data->field_car_color['und'][0]['jquery_colorpicker'];
+			}
+		}
+		catch (Exception $e) {
+			// we do nothing here 
+		}
+	}
+	
   $form['field_cost']['und']['#default_value'] = NULL;
   $form['field_remaining_seats']['#access'] = FALSE;
   
@@ -296,12 +353,48 @@ function _get_province_cities_js($province_tid) {
  * Implments hook_node_presave
  */
 function misc_node_presave($node) {
+	global $user;
+	
 	switch ($node->type) {
 		case 'ride':
 			// remaining seats count is the number of available seats
 			if ($node->is_new) {
-				$node->field_remaining_seats['und'][0]['value'] = $node->field_passengers['und'][0]['value'];
+				$node->field_remaining_seats['und'][0]['value'] = $node->field_no_passengers['und'][0]['value'];
 			}
+			
+			$user_data = user_load($user->uid); 
+			if (!isset($user_data->field_car_brand['und'][0]['tid'])) {
+				$user_data->field_car_brand['und'][0]['tid'] = $node->field_car_brand['und'][0]['tid'];
+			}
+				
+			if (!isset($user_data->field_car_model['und'][0]['value'])) {
+				$user_data->field_car_model['und'][0]['value'] = $node->field_car_model['und'][0]['value'];
+			}
+				
+			if (!isset($user_data->field_car_color['und'][0]['jquery_colorpicker'])) {
+				$user_data->field_car_color['und'][0]['jquery_colorpicker'] = $node->field_car_color['und'][0]['jquery_colorpicker'];
+			}
+			
+			user_save($user_data);
+	}
+}
+
+/**
+ * Implments hook_node_delete
+ * we handle subscribtion delete to increase number of remainging seats
+ * @param unknown_type $node
+ */
+function misc_node_delete($node) {
+	if ($node->type == 'ride_subscription') {
+	$status = $node->field_status['und'][0]['value'];
+	
+	// if subscribtion was accepted, then the remaining seats is +1
+	// remember this is a deletion
+	if ($status == 1) {
+		$ride_nid = $node->field_ride['und'][0]['nid'];
+		update_passenger_count($ride_nid, 1);
+	}
+	
 	}
 }
 
